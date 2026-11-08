@@ -4,6 +4,8 @@ package main
 
 import "fmt"
 
+func attachParentConsole() {}
+
 func RunIFEOInterceptor(targetArgs []string) int {
 	fmt.Println("[!] IFEO live process debugger mode is only supported on Windows.")
 	return 1

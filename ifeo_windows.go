@@ -95,7 +95,22 @@ var (
 	procOpenThread           = modkernel32.NewProc("OpenThread")
 	procFlushInstructionCache = modkernel32.NewProc("FlushInstructionCache")
 	procGetFinalPathNameByHandleW = modkernel32.NewProc("GetFinalPathNameByHandleW")
+	procAttachConsole        = modkernel32.NewProc("AttachConsole")
 )
+
+func attachParentConsole() {
+	r, _, _ := procAttachConsole.Call(uintptr(0xFFFFFFFF))
+	if r != 0 {
+		hOut, err := windows.GetStdHandle(windows.STD_OUTPUT_HANDLE)
+		if err == nil && hOut != 0 && hOut != windows.InvalidHandle {
+			os.Stdout = os.NewFile(uintptr(hOut), "/dev/stdout")
+		}
+		hErr, err := windows.GetStdHandle(windows.STD_ERROR_HANDLE)
+		if err == nil && hErr != 0 && hErr != windows.InvalidHandle {
+			os.Stderr = os.NewFile(uintptr(hErr), "/dev/stderr")
+		}
+	}
+}
 
 func getFilePathFromHandle(hFile windows.Handle) string {
 	if hFile == 0 || hFile == windows.InvalidHandle {
