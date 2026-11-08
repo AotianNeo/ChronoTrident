@@ -1,4 +1,4 @@
-module github.com/chronotrident/chronotrident
+module github.com/AotianNeo/ChronoTrident
 
 go 1.22
 

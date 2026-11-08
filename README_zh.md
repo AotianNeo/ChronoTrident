@@ -212,7 +212,7 @@ ChronoTrident 拥有纯净的工程设计，零 CGo 依赖，支持在 macOS、L
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/ChronoTrident.git
+git clone https://github.com/AotianNeo/ChronoTrident.git
 cd ChronoTrident
 
 # 为 Windows x64 (AMD64) 编译

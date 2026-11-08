@@ -208,7 +208,7 @@ ChronoTrident has zero CGo dependencies and compiles natively from macOS, Linux,
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/ChronoTrident.git
+git clone https://github.com/AotianNeo/ChronoTrident.git
 cd ChronoTrident
 
 # Compile for Windows x64 (AMD64)
