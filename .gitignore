@@ -1,0 +1,30 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.bin
+*.patched
+ie_forever_patcher_mac
+chronotrident_mac
+
+# Output directory
+bin/
+dist/
+
+# Test dumps & scratch files
+*.dmp
+*.pdb
+*.log
+*.tmp
+tmp/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
