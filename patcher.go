@@ -766,24 +766,26 @@ func locateTargetsI386(filePath string, textSec *pe.Section, textData []byte, te
 		}
 	}
 
-	// 4. For 32-bit iexplore.exe on Windows on ARM:
+	// 4. For 32-bit iexplore.exe on Windows on ARM (Win10 16299/17763/19041 ~ Win11 22000/22621/26100/28000):
 	// GetNativeSystemInfo under x86 WOW64 on ARM64 returns PROCESSOR_ARCHITECTURE_AMD64 (9) instead of ARM64 (12),
-	// causing `cmp word ptr [esp+0x9c], 0x0c; je DesktopFrameProcess` (`66 83 BC 24 9C 00 00 00 0C 0F 84`)
+	// causing `cmp word ptr [esp+disp32], 0x0c; je DesktopFrameProcess` (`66 83 BC 24 [disp32] 0C 0F 84`)
 	// to fall through into ThunkTo64BitFrame -> infinite 32<->64 ping-pong loop!
 	// Patch the `0F 84` (JE rel32) to `90 E9` (NOP; JMP rel32) so 32-bit IEXPLORE.EXE always runs DesktopFrameProcess.
-	patWoAThunk := []byte{0x66, 0x83, 0xBC, 0x24, 0x9C, 0x00, 0x00, 0x00, 0x0C, 0x0F, 0x84}
-	if idx := bytes.Index(textData, patWoAThunk); idx != -1 {
-		jeOff := idx + 9
-		results = append(results, PatchTarget{
-			Name:       "wWinMain::BypassThunkTo64BitFrame [x86]",
-			Arch:       "I386",
-			VA:         textVA + uint64(jeOff),
-			RVA:        textSec.VirtualAddress + uint32(jeOff),
-			FileOffset: textSec.Offset + uint32(jeOff),
-			OrigBytes:  append([]byte(nil), textData[jeOff:jeOff+2]...),
-			PatchBytes: []byte{0x90, 0xE9},
-		})
-		return results, nil
+	patWoAPrefix := []byte{0x66, 0x83, 0xBC, 0x24}
+	for i := 0; i <= len(textData)-11; i++ {
+		if bytes.Equal(textData[i:i+4], patWoAPrefix) && textData[i+8] == 0x0C && textData[i+9] == 0x0F && textData[i+10] == 0x84 {
+			jeOff := i + 9
+			results = append(results, PatchTarget{
+				Name:       "wWinMain::BypassThunkTo64BitFrame [x86]",
+				Arch:       "I386",
+				VA:         textVA + uint64(jeOff),
+				RVA:        textSec.VirtualAddress + uint32(jeOff),
+				FileOffset: textSec.Offset + uint32(jeOff),
+				OrigBytes:  append([]byte(nil), textData[jeOff:jeOff+2]...),
+				PatchBytes: []byte{0x90, 0xE9},
+			})
+			return results, nil
+		}
 	}
 
 	// 5. ShouldOpenInEdge (__fastcall 1 arg in ECX -> ret)
