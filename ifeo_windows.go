@@ -475,7 +475,24 @@ func InstallIFEO(alsoHookControlPanel bool) error {
 		}
 	}
 
-	// 5. Create Desktop shortcut on Public Desktop so it appears on all users' desktops
+	// 5. Expose "Enable 64-bit processes for Enhanced Protected Mode*" (inetcpl.cpl,-4755) in Advanced Options
+	adv64Path := `SOFTWARE\Microsoft\Internet Explorer\AdvancedOptions\CRYPTO\PROTECTEDMODE64`
+	if k, _, err := registry.CreateKey(registry.LOCAL_MACHINE, adv64Path, registry.SET_VALUE); err == nil {
+		_ = k.SetStringValue("Text", "Enable 64-bit processes for Enhanced Protected Mode*")
+		_ = k.SetStringValue("PlugUIText", "@C:\\Windows\\System32\\inetcpl.cpl,-4755")
+		_ = k.SetStringValue("RegPath", "SOFTWARE\\Microsoft\\Internet Explorer\\Main")
+		_ = k.SetStringValue("RegPoliciesPath", "SOFTWARE\\Policies\\Microsoft\\Internet Explorer\\Main")
+		_ = k.SetStringValue("ValueName", "Isolation64Bit")
+		_ = k.SetStringValue("Type", "checkbox")
+		_ = k.SetDWordValue("CheckedValue", 1)
+		_ = k.SetDWordValue("UncheckedValue", 0)
+		_ = k.SetDWordValue("DefaultValue", 0)
+		_ = k.SetDWordValue("HKeyRoot", 0x80000001) // HKEY_CURRENT_USER
+		_ = k.SetDWordValue("IEOnly", 1)
+		k.Close()
+	}
+
+	// 6. Create Desktop shortcut on Public Desktop so it appears on all users' desktops
 	pubDesktop := os.Getenv("PUBLIC")
 	if pubDesktop == "" {
 		pubDesktop = `C:\Users\Public`
